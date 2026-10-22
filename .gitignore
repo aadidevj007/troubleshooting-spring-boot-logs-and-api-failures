@@ -1,0 +1,12 @@
+.env
+target/
+*.log
+.idea/
+.vscode/
+*.iml
+Thumbs.db
+*.class
+frontend/node_modules/
+frontend/dist/
+*.tsbuildinfo
+/package-lock.json
