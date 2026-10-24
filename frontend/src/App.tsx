@@ -90,19 +90,19 @@ function Shell() {
   ];
   return <ConsoleContext.Provider value={{ activity, record }}><div className="shell">
     <aside className={mobile ? "sidebar open" : "sidebar"}>
-      <div className="brand"><BrandMark/><div><strong>REDLINE</strong><span>Q34 / OPS CONSOLE</span></div><button className="mobile-close" aria-label="Close navigation" onClick={() => setMobile(false)}><X size={18}/></button></div>
+      <div className="brand"><BrandMark/><div><strong>SPRING BOOT</strong><span>LOGS &amp; API FAILURES</span></div><button className="mobile-close" aria-label="Close navigation" onClick={() => setMobile(false)}><X size={18}/></button></div>
       <div className="workspace"><span className="dot green"/> LOCAL / DOCKER <span className="static-label">STATIC</span></div>
       <nav>{nav.map(({ to, label, icon: Icon }) => <NavLink key={to} to={to} end={to === "/"} onClick={() => setMobile(false)} className={({ isActive }) => isActive ? "active" : ""}><Icon size={17}/>{label}</NavLink>)}</nav>
-      <div className="sidebar-foot"><div className="live"><span className="pulse"/> SESSION CONSOLE</div><small>Q34 / v1.0.0<br/>Spring Boot + MySQL</small></div>
+      <div className="sidebar-foot"><div className="live"><span className="pulse"/> TROUBLESHOOTING CONSOLE</div><small>Q34 / v1.0.0<br/>Spring Boot + MySQL</small></div>
     </aside>
-    <main><header><button className="mobile-menu" aria-label="Open navigation" onClick={() => setMobile(true)}><Menu/></button><div><span className="eyebrow">SYSTEM / DIAGNOSTICS</span><h1>Container operations center</h1></div><div className="header-status"><span className="dot green"/> LOCAL ONLY <span className="divider"/> <span className="muted">LIVE TELEMETRY</span></div></header>
+    <main><header><button className="mobile-menu" aria-label="Open navigation" onClick={() => setMobile(true)}><Menu/></button><div><span className="eyebrow">SPRING BOOT / DIAGNOSTICS</span><h1>Logs &amp; API failures</h1></div><div className="header-status"><span className="dot green"/> LOCAL ONLY <span className="divider"/> <span className="muted">LIVE TELEMETRY</span></div></header>
       <Routes><Route path="/" element={<Overview/>}/><Route path="/explorer" element={<Explorer/>}/><Route path="/database" element={<DatabasePage/>}/><Route path="/logs" element={<Logs/>}/><Route path="/lab" element={<FailureLab/>}/><Route path="/students" element={<Students/>}/></Routes>
     </main>
   </div></ConsoleContext.Provider>;
 }
 
 function BrandMark() {
-  return <div className="brand-mark" aria-label="REDLINE Q34 logo"><svg viewBox="0 0 44 44" role="img" aria-hidden="true"><path d="M7 6h18c7 0 12 4 12 10 0 4-2 7-6 9l7 13H27l-6-11h-5v11H7V6Zm9 8v5h8c2 0 3-1 3-3s-1-2-3-2h-8Z"/><path className="brand-slash" d="m31 5 6 0-22 34H9L31 5Z"/></svg></div>;
+  return <div className="brand-mark" aria-label="Spring Boot logs and API failures logo"><svg viewBox="0 0 44 44" role="img" aria-hidden="true"><path d="M8 5h20l8 8v26H8V5Zm5 5v24h18V16H25V10H13Z"/><path className="brand-slash" d="m28 18 5 3-13 13-6-6 4-4 2 2 8-8Z"/></svg></div>;
 }
 
 function Page({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
