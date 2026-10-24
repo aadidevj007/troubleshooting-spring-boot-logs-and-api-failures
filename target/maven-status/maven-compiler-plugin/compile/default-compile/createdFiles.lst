@@ -1,3 +1,4 @@
+com\example\q34\api\ApiInfoController.class
 com\example\q34\diagnostics\DiagnosticScenarioRequest.class
 com\example\q34\diagnostics\DiagnosticsController.class
 com\example\q34\diagnostics\DiagnosticScenario.class
@@ -11,6 +12,7 @@ com\example\q34\api\ApiExceptionHandler.class
 com\example\q34\api\ApiKeyGuard.class
 com\example\q34\diagnostics\DiagnosticsService$1.class
 com\example\q34\api\DiagnosticRateLimitFilter.class
+com\example\q34\api\ApiInfo.class
 com\example\q34\student\StudentRepository.class
 com\example\q34\api\DiagnosticRateLimitFilter$Window.class
 com\example\q34\diagnostics\ApplicationStatus.class
