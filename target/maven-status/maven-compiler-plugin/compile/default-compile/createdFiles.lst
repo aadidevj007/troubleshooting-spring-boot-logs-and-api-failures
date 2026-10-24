@@ -1,0 +1,9 @@
+com/example/q34/api/ApiExceptionHandler.class
+com/example/q34/Q34Application.class
+com/example/q34/diagnostics/DiagnosticsController.class
+com/example/q34/diagnostics/DiagnosticsService.class
+com/example/q34/student/StudentRepository.class
+com/example/q34/student/StudentService.class
+com/example/q34/api/WebConfig.class
+com/example/q34/student/StudentController.class
+com/example/q34/student/Student.class

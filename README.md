@@ -1,4 +1,4 @@
-# Q34: Troubleshooting Spring Boot Logs and API Failures
+# Troubleshooting Spring Boot Logs and API Failures
 
 This small Spring Boot project demonstrates the Q34 Docker scenario: a REST API
 reads students from MySQL, then a controlled database configuration error is

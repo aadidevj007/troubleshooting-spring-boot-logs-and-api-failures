@@ -1,0 +1,9 @@
+/workspace/src/main/java/com/example/q34/Q34Application.java
+/workspace/src/main/java/com/example/q34/api/ApiExceptionHandler.java
+/workspace/src/main/java/com/example/q34/api/WebConfig.java
+/workspace/src/main/java/com/example/q34/diagnostics/DiagnosticsController.java
+/workspace/src/main/java/com/example/q34/diagnostics/DiagnosticsService.java
+/workspace/src/main/java/com/example/q34/student/Student.java
+/workspace/src/main/java/com/example/q34/student/StudentController.java
+/workspace/src/main/java/com/example/q34/student/StudentRepository.java
+/workspace/src/main/java/com/example/q34/student/StudentService.java
