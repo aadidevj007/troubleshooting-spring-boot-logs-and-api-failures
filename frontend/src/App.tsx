@@ -55,7 +55,11 @@ async function request<T>(path: string, options?: RequestInit): Promise<ApiRespo
   try {
     response = await fetch(endpoint, {
       ...options,
-      headers: { Accept: "application/json", "Content-Type": "application/json", ...(options?.headers || {}) },
+      headers: {
+        Accept: "application/json",
+        ...(options?.body ? { "Content-Type": "application/json" } : {}),
+        ...(options?.headers || {}),
+      },
     });
   } catch {
     throw new ApiError(0, "Network failure: the local API could not be reached.");
