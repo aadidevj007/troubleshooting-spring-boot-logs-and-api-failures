@@ -13,6 +13,7 @@ export function isSafeApiOrigin(
 
 export function isAllowedEndpoint(method: string, path: string): boolean {
   return [
+    "GET /actuator/health",
     "GET /api/students",
     "GET /api/diagnostics/database",
     "POST /api/diagnostics/scenarios",
