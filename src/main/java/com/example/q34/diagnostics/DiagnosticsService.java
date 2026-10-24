@@ -25,10 +25,12 @@ public class DiagnosticsService {
         try {
             Integer dual = jdbcTemplate.queryForObject("SELECT 1", Integer.class);
             return new DatabaseStatus(dual != null && dual == 1, hostFromUrl(datasourceUrl),
-                    portFromUrl(datasourceUrl), checkedAt, "JDBC SELECT 1 check succeeded");
+                    portFromUrl(datasourceUrl), checkedAt, "JDBC SELECT 1 check succeeded",
+                    "CONNECTED", "The configured datasource returned 1 from SELECT 1.");
         } catch (DataAccessException exception) {
             return new DatabaseStatus(false, hostFromUrl(datasourceUrl), portFromUrl(datasourceUrl),
-                    checkedAt, "JDBC connectivity check unavailable");
+                    checkedAt, "JDBC connectivity check unavailable", "UNAVAILABLE",
+                    "The configured datasource did not complete SELECT 1; sensitive driver details are omitted.");
         }
     }
 

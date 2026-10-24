@@ -5,5 +5,7 @@ public record DatabaseStatus(
         String host,
         int port,
         String checkedAt,
-        String message) {
+        String message,
+        String classification,
+        String evidence) {
 }
