@@ -65,9 +65,9 @@ browser; run the documented PowerShell commands yourself when reproducing a
 container failure.
 
 ```powershell
-curl.exe http://localhost:8080/actuator/health
-curl.exe http://localhost:8080/api/students
-curl.exe http://localhost:8080/api/students/1
+curl.exe http://localhost:8081/actuator/health
+curl.exe http://localhost:8081/api/students
+curl.exe http://localhost:8081/api/students/1
 ```
 
 Expected list response (IDs can differ after a reset):
@@ -84,12 +84,12 @@ Create a student:
 
 ```powershell
 $body = '{"name":"Noah Patel","email":"noah.patel@example.com"}'
-curl.exe -i -X POST http://localhost:8080/api/students `
+curl.exe -i -X POST http://localhost:8081/api/students `
   -H "Content-Type: application/json" -d $body
 ```
 
 The response is `201 Created`. The same request can be sent in Postman with
-`POST http://localhost:8080/api/students` and the JSON body above.
+`POST http://localhost:8081/api/students` and the JSON body above.
 
 ## Q34 troubleshooting demonstration
 
@@ -144,7 +144,7 @@ docker compose run --rm --no-deps `
 In another PowerShell window, while that command is running or after it exits:
 
 ```powershell
-curl.exe -i http://localhost:8080/api/students
+curl.exe -i http://localhost:8081/api/students
 docker compose logs --no-color app
 ```
 
@@ -173,7 +173,7 @@ authentication failure (MySQL rejects valid TCP credentials).
 docker compose up -d app
 docker compose ps
 docker compose logs --no-color --tail=100 app
-curl.exe http://localhost:8080/api/students
+curl.exe http://localhost:8081/api/students
 ```
 
 The list response proves that the hostname, credentials, schema, and JPA
@@ -251,3 +251,11 @@ The initialization SQL runs only when the MySQL data directory is empty.
 Changing `.env` credentials after the first start does not rewrite existing
 database users; use `docker compose down -v` only when a clean local reset is
 acceptable. No real credentials belong in this repository.
+
+## Interactive API and safe scenario lab
+
+The React API Explorer supports allowlisted local endpoints, GET and POST (student creation only), JSON request bodies, HTTP status, elapsed time, and full JSON error responses. It intentionally does not act as an unrestricted HTTP proxy.
+
+The Failure Lab uses `GET /api/diagnostics/scenarios?scenario=wrong-host` with allowed values `healthy`, `wrong-host`, `bad-password`, and `db-not-ready`. Responses are **simulations** describing expected root causes and recovery steps; they do not alter runtime configuration or execute Docker commands. Use `/api/diagnostics/database` for a real read-only JDBC connectivity test.
+
+**Security note:** This is a local training environment, not a production public service. Student endpoints and diagnostics are not authenticated. Before internet exposure, add authentication, authorization, rate limits, strict CORS/origin policy, data isolation, and auditing. Do not expose MySQL or Docker socket to the browser.
