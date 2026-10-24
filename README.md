@@ -65,10 +65,15 @@ browser; run the documented PowerShell commands yourself when reproducing a
 container failure.
 
 ```powershell
+curl.exe http://localhost:8081/
 curl.exe http://localhost:8081/actuator/health
 curl.exe http://localhost:8081/api/students
 curl.exe http://localhost:8081/api/students/1
 ```
+
+The API root returns a route summary. The interactive dashboard is served
+separately at `http://localhost:5173`; opening the API root is not the
+dashboard.
 
 Expected list response (IDs can differ after a reset):
 
