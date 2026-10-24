@@ -2,7 +2,9 @@ package com.example.q34.student;
 
 import java.util.List;
 
+import com.example.q34.api.ApiKeyGuard;
 import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,9 +19,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class StudentController {
 
     private final StudentService service;
+    private final ApiKeyGuard apiKeyGuard;
 
-    public StudentController(StudentService service) {
+    public StudentController(StudentService service, ApiKeyGuard apiKeyGuard) {
         this.service = service;
+        this.apiKeyGuard = apiKeyGuard;
     }
 
     @GetMapping
@@ -34,7 +38,9 @@ public class StudentController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Student createStudent(@Valid @RequestBody Student student) {
+    public Student createStudent(@Valid @RequestBody Student student,
+                                 @RequestHeader(value = "X-Local-Admin-Key", required = false) String apiKey) {
+        apiKeyGuard.requireConfiguredKey(apiKey);
         return service.create(student);
     }
 }

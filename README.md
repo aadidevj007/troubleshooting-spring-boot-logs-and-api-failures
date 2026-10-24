@@ -65,9 +65,9 @@ browser; run the documented PowerShell commands yourself when reproducing a
 container failure.
 
 ```powershell
-curl.exe http://localhost:8080/actuator/health
-curl.exe http://localhost:8080/api/students
-curl.exe http://localhost:8080/api/students/1
+curl.exe http://localhost:8081/actuator/health
+curl.exe http://localhost:8081/api/students
+curl.exe http://localhost:8081/api/students/1
 ```
 
 Expected list response (IDs can differ after a reset):
@@ -84,12 +84,44 @@ Create a student:
 
 ```powershell
 $body = '{"name":"Noah Patel","email":"noah.patel@example.com"}'
-curl.exe -i -X POST http://localhost:8080/api/students `
+curl.exe -i -X POST http://localhost:8081/api/students `
   -H "Content-Type: application/json" -d $body
 ```
 
 The response is `201 Created`. The same request can be sent in Postman with
-`POST http://localhost:8080/api/students` and the JSON body above.
+`POST http://localhost:8081/api/students` and the JSON body above.
+
+## Interactive API explorer and safe diagnostics
+
+The dashboard API Explorer at `http://localhost:5173/explorer` can call only
+the approved local routes: `GET /api/students`, `GET /api/students/{id}`,
+`POST /api/students`, and `GET /api/diagnostics/database`. It does not accept
+arbitrary URLs, proxy requests through the server, or store request bodies.
+POST bodies are parsed as JSON in the browser before submission.
+
+The Failure lab uses `POST /api/diagnostics/scenarios` with only these enum
+identifiers: `WRONG_HOST` (DNS/network), `WRONG_PASSWORD` (authentication),
+`DB_UNAVAILABLE` (availability), and `API_NOT_FOUND` (routing). Every result
+has `simulated: true` and is deterministic guidance; it is never evidence of
+a real observed failure. The live database endpoint performs only `SELECT 1`
+against the configured datasource and never exposes credentials or stack
+traces.
+
+Example scenario request:
+
+```powershell
+curl.exe -i -X POST http://localhost:8081/api/diagnostics/scenarios `
+  -H "Content-Type: application/json" `
+  -d '{"scenario":"WRONG_HOST"}'
+```
+
+For a publicly reachable deployment, set `APP_API_KEY` and send it as
+`X-Local-Admin-Key` for diagnostics and student writes. Configure
+`APP_CORS_ALLOWED_ORIGINS` with explicit trusted frontend origins. Diagnostic
+requests are rate limited by `DIAGNOSTIC_RATE_LIMIT` and
+`DIAGNOSTIC_RATE_WINDOW_SECONDS`. The application never accepts database
+credentials or hosts from diagnostic requests, runs shell commands, accesses
+the Docker daemon, or changes datasource settings.
 
 ## Q34 troubleshooting demonstration
 
@@ -144,7 +176,7 @@ docker compose run --rm --no-deps `
 In another PowerShell window, while that command is running or after it exits:
 
 ```powershell
-curl.exe -i http://localhost:8080/api/students
+curl.exe -i http://localhost:8081/api/students
 docker compose logs --no-color app
 ```
 
@@ -173,7 +205,7 @@ authentication failure (MySQL rejects valid TCP credentials).
 docker compose up -d app
 docker compose ps
 docker compose logs --no-color --tail=100 app
-curl.exe http://localhost:8080/api/students
+curl.exe http://localhost:8081/api/students
 ```
 
 The list response proves that the hostname, credentials, schema, and JPA
