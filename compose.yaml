@@ -11,7 +11,7 @@ services:
       - mysql_data:/var/lib/mysql
       - ./src/main/resources/db/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
     networks:
-      - app_network
+      - network
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p\"$${MYSQL_ROOT_PASSWORD}\" --silent"]
       interval: 5s
@@ -35,7 +35,7 @@ services:
     ports:
       - "8081:8080"
     networks:
-      - app_network
+      - network
     depends_on:
       mysql:
         condition: service_healthy
@@ -56,6 +56,6 @@ volumes:
   mysql_data:
 
 networks:
-  app_network:
-    name: q34_app_network
+  network:
+    name: network
     driver: bridge

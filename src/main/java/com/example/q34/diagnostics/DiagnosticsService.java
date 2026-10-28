@@ -48,7 +48,7 @@ public class DiagnosticsService {
                 classification = "DNS_OR_NETWORK";
                 evidence = "Simulation only: an application configured with a non-existent database host would fail name resolution.";
                 probableCause = "The datasource hostname does not resolve on the Compose network.";
-                recommendedFix = "Use the Compose service name mysql and verify q34_app_network connectivity.";
+                recommendedFix = "Use the Compose service name mysql and verify network connectivity.";
             }
             case WRONG_PASSWORD -> {
                 classification = "AUTHENTICATION";

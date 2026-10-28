@@ -44,7 +44,7 @@ flowchart LR
     App["app\nSpring Boot :8080"]
     DB[("mysql\nMySQL :3306")]
     Volume[("mysql_data\nnamed volume")]
-    Network{{"q34_app_network\nprivate bridge network"}}
+    Network{{"network\nprivate bridge network"}}
 
     Browser -->|"HTTP :5173"| Web
     Browser -->|"HTTP :8081"| App
@@ -293,7 +293,7 @@ docker ps
 docker ps -a
 docker compose logs --no-color app
 docker compose logs --no-color mysql
-docker network inspect q34_app_network
+docker network inspect network
 ```
 
 The network output should list both `q34-app-1` and `q34-mysql-1` (Compose
@@ -313,7 +313,7 @@ container on the same Compose network. `MYSQL_PWD` prevents the password from
 appearing in the command arguments:
 
 ```powershell
-docker run --rm --network q34_app_network `
+docker run --rm --network network `
   -e MYSQL_PWD="$env:MYSQL_PASSWORD" mysql:8.4 `
   mysqladmin ping -h mysql -u "$env:MYSQL_USER" --silent
 ```
@@ -379,7 +379,7 @@ startup are working again.
 | App exits during startup | `docker compose ps -a`; `docker compose logs app` | Non-zero exit and Spring datasource exception | Invalid URL, credentials, or schema | Correct `.env` / datasource settings | `docker compose ps` shows app running; API returns 200 |
 | `wrong-host` cannot resolve | `docker compose logs app`; `docker compose exec app getent hosts mysql` | Unknown-host error; `mysql` resolves | Wrong database hostname | Use `mysql`, not `localhost` or `wrong-host` | Restart app and call `/api/students` |
 | Access denied | `docker run ... mysqladmin ping ...` and app logs | MySQL access-denied message | Username/password mismatch | Align `.env` values and recreate DB only if credentials were initialized incorrectly | Health ping and API both succeed |
-| Connection refused/timeouts | `docker compose ps`; `docker network inspect q34_app_network` | MySQL not healthy or absent from network | DB still starting or network mismatch | Wait for healthcheck; use Compose network | `mysql` is `healthy`; app starts |
+| Connection refused/timeouts | `docker compose ps`; `docker network inspect network` | MySQL not healthy or absent from network | DB still starting or network mismatch | Wait for healthcheck; use Compose network | `mysql` is `healthy`; app starts |
 | Empty/old sample data | `docker volume ls`; `curl .../api/students` | Volume contains previous state | Named volume preserves data | `docker compose down -v` only for a deliberate reset | Seed rows return after `up --build` |
 
 ## Safe reset and shutdown
@@ -431,7 +431,7 @@ docker compose up -d --build
 - [ ] Successful `/api/students` response with sample rows
 - [ ] `docker compose logs app` during normal startup
 - [ ] `docker compose logs mysql` showing database readiness
-- [ ] `docker network inspect q34_app_network` showing both services
+- [ ] `docker network inspect network` showing both services
 - [ ] `docker compose exec app getent hosts mysql`
 - [ ] Temporary `mysqladmin ping` success (without showing a password)
 - [ ] Controlled failure curl and relevant Spring error log
