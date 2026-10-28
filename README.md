@@ -1,21 +1,166 @@
 # Troubleshooting Spring Boot Logs and API Failures
 
-This small Spring Boot project demonstrates the Q34 Docker scenario: a REST API
-reads students from MySQL, then a controlled database configuration error is
-diagnosed with Docker commands and fixed. It is intentionally not a full-stack
-application.
+> A hands-on Docker troubleshooting lab for Spring Boot, MySQL, and a
+> read-only operations dashboard.
 
-## Architecture
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-brightgreen?logo=springboot)](https://spring.io/projects/spring-boot)
+[![Java](https://img.shields.io/badge/Java-25-orange?logo=openjdk)](https://openjdk.org/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.4-blue?logo=mysql)](https://www.mysql.com/)
+[![Docker Compose](https://img.shields.io/badge/Docker%20Compose-ready-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
 
-```text
-PowerShell/curl -> app:8080 (Spring Boot) -> mysql:3306 (MySQL)
-                                  app_network
+This project recreates a realistic incident: users report that the student API
+is failing, and the operator must distinguish a DNS problem, a TCP connection
+problem, MySQL authentication failure, database startup delay, or an application
+error. It includes a deliberately safe failure lab, reproducible Docker
+commands, and an operations dashboard that never executes Docker commands or
+accepts database credentials from the browser.
+
+## What this repository provides
+
+| Area | Capability |
+|---|---|
+| **Application** | Spring Boot REST API for student records |
+| **Persistence** | MySQL 8.4 with a named volume and seed data |
+| **Operations UI** | Vite/React dashboard for health, logs guidance, diagnostics, and API exploration |
+| **Diagnostics** | JDBC `SELECT 1` check and deterministic simulated failure scenarios |
+| **Troubleshooting lab** | Docker logs, DNS/TCP checks, authentication checks, controlled failures, and recovery |
+| **Safety controls** | Explicit CORS origins, optional API key, diagnostic rate limiting, and no shell/Docker access from HTTP |
+
+## Architecture at a glance
+
+```mermaid
+flowchart LR
+    Browser["Browser / PowerShell / Postman"]
+    Web["web\nNginx :5173"]
+    App["app\nSpring Boot :8080"]
+    DB[("mysql\nMySQL :3306")]
+    Volume[("mysql_data\nnamed volume")]
+    Network{{"q34_app_network\nprivate bridge network"}}
+
+    Browser -->|"HTTP :5173"| Web
+    Browser -->|"HTTP :8081"| App
+    Web -.->|"VITE_API_URL"| App
+    App -->|"JDBC / SQL"| DB
+    DB --> Volume
+    Web --- Network
+    App --- Network
+    DB --- Network
 ```
 
-The Compose service name `mysql` is the database hostname. `localhost` would
-mean "the application container itself", so it is deliberately not used.
-MySQL is not published to the Windows host. The `mysql_data` named volume keeps
-data when the application container is recreated.
+The host publishes the dashboard on `localhost:5173` and the API on
+`localhost:8081` (mapped to port `8080` inside the app container). MySQL is
+private to the Compose network. Inside Docker, the hostname is **`mysql`**;
+`localhost` would incorrectly refer to the current container.
+
+## Repository architecture
+
+```text
+.
+├── compose.yaml                 # web, app, mysql, network, volume, healthcheck
+├── Dockerfile                   # Java 25 multi-stage build and non-root runtime
+├── README.md                    # Runbook, diagrams, scenarios, and evidence checklist
+├── .env.example                 # Safe configuration template (copy to .env)
+├── frontend/
+│   ├── Dockerfile               # Node build -> Nginx runtime image
+│   ├── nginx.conf               # SPA fallback for React Router
+│   ├── package.json              # Vite, React, Vitest, and UI dependencies
+│   └── src/
+│       ├── App.tsx              # Dashboard routes and operations views
+│       ├── apiSecurity.ts       # Approved browser API surface
+│       ├── apiSecurity.test.ts  # Frontend security tests
+│       └── styles.css           # Dashboard visual system
+├── src/main/java/com/example/q34/
+│   ├── Q34Application.java      # Spring Boot entry point
+│   ├── api/                     # CORS, API metadata, auth, rate limiting, errors
+│   ├── diagnostics/             # Live DB check and simulated failure guidance
+│   └── student/                 # Entity, repository, service, and REST controller
+├── src/main/resources/
+│   ├── application.properties  # Environment-driven Spring configuration
+│   └── db/init.sql              # MySQL schema and sample records
+└── src/test/                    # Spring MVC and controller tests
+```
+
+### Backend package organisation
+
+```mermaid
+flowchart TB
+    Entry["Q34Application"]
+    API["api/\nCross-cutting HTTP controls"]
+    Diagnostics["diagnostics/\nOperational evidence"]
+    Student["student/\nBusiness resource"]
+    Config["application.properties"]
+    DB[("MySQL")]
+
+    Entry --> API
+    Entry --> Diagnostics
+    Entry --> Student
+    API --> Config
+    Diagnostics --> Config
+    Student --> DB
+    Diagnostics --> DB
+```
+
+## Request and diagnostic flows
+
+### Normal student request
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant W as Nginx dashboard
+    participant A as Spring Boot API
+    participant H as API controls
+    participant S as Student service
+    participant M as MySQL
+
+    U->>W: Open dashboard
+    W-->>U: React application
+    U->>A: GET /api/students
+    A->>H: CORS / API key / error handling
+    H->>S: Load students
+    S->>M: SELECT students
+    M-->>S: Rows
+    S-->>A: Student list
+    A-->>U: 200 JSON response
+```
+
+### Incident investigation flow
+
+```mermaid
+flowchart TD
+    Start(["Users report API failure"]) --> State["docker compose ps"]
+    State -->|MySQL unhealthy| MySQLLogs["docker compose logs mysql"]
+    State -->|App exited| AppLogs["docker compose logs app"]
+    State -->|Both running| DNS["docker compose exec app getent hosts mysql"]
+    DNS -->|No address| Host["Wrong hostname or network"]
+    DNS -->|Address returned| TCP["docker compose exec app nc -zv mysql 3306"]
+    TCP -->|Closed / timeout| Availability["MySQL unavailable or still starting"]
+    TCP -->|Open| SQL["JDBC SELECT 1 diagnostic"]
+    SQL -->|Authentication error| Credentials["Check aligned .env credentials"]
+    SQL -->|Success| API["Call /actuator/health and /api/students"]
+    AppLogs --> Cause["Classify startup exception"]
+    MySQLLogs --> Cause
+    Host --> Fix["Apply smallest safe fix"]
+    Availability --> Fix
+    Credentials --> Fix
+    Cause --> Fix
+    API --> Verify(["Capture evidence and confirm recovery"])
+    Fix --> Verify
+```
+
+### Evidence boundaries
+
+The checks intentionally prove different layers:
+
+1. `docker compose ps` proves container state and the MySQL healthcheck result.
+2. `docker compose logs app` and `docker compose logs mysql` explain startup and
+   runtime failures.
+3. `getent hosts mysql` proves Docker DNS resolution.
+4. `nc -zv mysql 3306` proves TCP reachability from the app container.
+5. The live diagnostics endpoint executes `SELECT 1` through the configured
+   Spring datasource, proving application-level database access.
+6. `/api/students` proves the schema, credentials, JPA mapping, and API path work
+   together.
 
 ## Prerequisites
 
@@ -65,10 +210,15 @@ browser; run the documented PowerShell commands yourself when reproducing a
 container failure.
 
 ```powershell
-curl.exe http://localhost:8080/actuator/health
-curl.exe http://localhost:8080/api/students
-curl.exe http://localhost:8080/api/students/1
+curl.exe http://localhost:8081/
+curl.exe http://localhost:8081/actuator/health
+curl.exe http://localhost:8081/api/students
+curl.exe http://localhost:8081/api/students/1
 ```
+
+The API root returns a route summary. The interactive dashboard is served
+separately at `http://localhost:5173`; opening the API root is not the
+dashboard.
 
 Expected list response (IDs can differ after a reset):
 
@@ -84,12 +234,44 @@ Create a student:
 
 ```powershell
 $body = '{"name":"Noah Patel","email":"noah.patel@example.com"}'
-curl.exe -i -X POST http://localhost:8080/api/students `
+curl.exe -i -X POST http://localhost:8081/api/students `
   -H "Content-Type: application/json" -d $body
 ```
 
 The response is `201 Created`. The same request can be sent in Postman with
-`POST http://localhost:8080/api/students` and the JSON body above.
+`POST http://localhost:8081/api/students` and the JSON body above.
+
+## Interactive API explorer and safe diagnostics
+
+The dashboard API Explorer at `http://localhost:5173/explorer` can call only
+the approved local routes: `GET /api/students`, `GET /api/students/{id}`,
+`POST /api/students`, and `GET /api/diagnostics/database`. It does not accept
+arbitrary URLs, proxy requests through the server, or store request bodies.
+POST bodies are parsed as JSON in the browser before submission.
+
+The Failure lab uses `POST /api/diagnostics/scenarios` with only these enum
+identifiers: `WRONG_HOST` (DNS/network), `WRONG_PASSWORD` (authentication),
+`DB_UNAVAILABLE` (availability), and `API_NOT_FOUND` (routing). Every result
+has `simulated: true` and is deterministic guidance; it is never evidence of
+a real observed failure. The live database endpoint performs only `SELECT 1`
+against the configured datasource and never exposes credentials or stack
+traces.
+
+Example scenario request:
+
+```powershell
+curl.exe -i -X POST http://localhost:8081/api/diagnostics/scenarios `
+  -H "Content-Type: application/json" `
+  -d '{"scenario":"WRONG_HOST"}'
+```
+
+For a publicly reachable deployment, set `APP_API_KEY` and send it as
+`X-Local-Admin-Key` for diagnostics and student writes. Configure
+`APP_CORS_ALLOWED_ORIGINS` with explicit trusted frontend origins. Diagnostic
+requests are rate limited by `DIAGNOSTIC_RATE_LIMIT` and
+`DIAGNOSTIC_RATE_WINDOW_SECONDS`. The application never accepts database
+credentials or hosts from diagnostic requests, runs shell commands, accesses
+the Docker daemon, or changes datasource settings.
 
 ## Q34 troubleshooting demonstration
 
@@ -144,7 +326,7 @@ docker compose run --rm --no-deps `
 In another PowerShell window, while that command is running or after it exits:
 
 ```powershell
-curl.exe -i http://localhost:8080/api/students
+curl.exe -i http://localhost:8081/api/students
 docker compose logs --no-color app
 ```
 
@@ -173,7 +355,7 @@ authentication failure (MySQL rejects valid TCP credentials).
 docker compose up -d app
 docker compose ps
 docker compose logs --no-color --tail=100 app
-curl.exe http://localhost:8080/api/students
+curl.exe http://localhost:8081/api/students
 ```
 
 The list response proves that the hostname, credentials, schema, and JPA
