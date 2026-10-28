@@ -26,6 +26,15 @@ accepts database credentials from the browser.
 | **Troubleshooting lab** | Docker logs, DNS/TCP checks, authentication checks, controlled failures, and recovery |
 | **Safety controls** | Explicit CORS origins, optional API key, diagnostic rate limiting, and no shell/Docker access from HTTP |
 
+## Team members
+
+| Serial No. | Name | Register Number | Email ID |
+|---:|---|---:|---|
+| 1 | Aadidev J | 99230041022 | [99230041022@klu.ac.in](mailto:99230041022@klu.ac.in) |
+| 2 | S Ganesh Kumar | 99230041090 | [99230041090@klu.ac.in](mailto:99230041090@klu.ac.in) |
+| 3 | S Teja Dhanush | 99230041104 | [99230041104@klu.ac.in](mailto:99230041104@klu.ac.in) |
+| 4 | T Farhaan | 99230041088 | [99230041088@klu.ac.in](mailto:99230041088@klu.ac.in) |
+
 ## Architecture at a glance
 
 ```mermaid
