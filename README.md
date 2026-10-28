@@ -60,6 +60,8 @@ private to the Compose network. Inside Docker, the hostname is **`mysql`**;
 ├── Dockerfile                   # Java 25 multi-stage build and non-root runtime
 ├── README.md                    # Runbook, diagrams, scenarios, and evidence checklist
 ├── .env.example                 # Safe configuration template (copy to .env)
+├── docs/
+│   └── screenshots/              # Reproducible dashboard screenshots used below
 ├── frontend/
 │   ├── Dockerfile               # Node build -> Nginx runtime image
 │   ├── nginx.conf               # SPA fallback for React Router
@@ -433,3 +435,32 @@ The initialization SQL runs only when the MySQL data directory is empty.
 Changing `.env` credentials after the first start does not rewrite existing
 database users; use `docker compose down -v` only when a clean local reset is
 acceptable. No real credentials belong in this repository.
+
+## Dashboard screenshots
+
+The screenshots below were captured from the running Docker deployment after
+the frontend and API became healthy. They are stored in
+[`docs/screenshots/`](./docs/screenshots/) so the gallery remains available in
+the GitHub repository and does not depend on a local `localhost` URL.
+
+### Operations overview
+
+The overview combines API health, observed latency, visible student records,
+and the live MySQL connection state in one operator-friendly view.
+
+![Operations dashboard overview](./docs/screenshots/overview.png)
+
+### API explorer
+
+The API Explorer provides a constrained interface for approved local routes
+without becoming an arbitrary URL proxy.
+
+![API Explorer](./docs/screenshots/api-explorer.png)
+
+### Database diagnostics
+
+The database diagnostics view reports the configured host and port and performs
+the application-level JDBC `SELECT 1` check without exposing credentials or
+stack traces.
+
+![Database diagnostics](./docs/screenshots/database-diagnostics.png)
