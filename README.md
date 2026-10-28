@@ -464,3 +464,26 @@ the application-level JDBC `SELECT 1` check without exposing credentials or
 stack traces.
 
 ![Database diagnostics](./docs/screenshots/database-diagnostics.png)
+
+### Request activity
+
+Request activity is intentionally scoped to the current browser session. The
+page also points operators to Docker logs as the authoritative source for
+server-side evidence.
+
+![Request activity](./docs/screenshots/request-activity.png)
+
+### Failure lab
+
+The Failure lab presents deterministic, local-only simulations for DNS,
+authentication, database availability, and routing failures. Simulations do
+not modify datasource settings or execute commands.
+
+![Failure lab](./docs/screenshots/failure-lab.png)
+
+### Student records
+
+Student records demonstrates the end-to-end persistence path from the React
+dashboard through Spring Boot and JPA to MySQL.
+
+![Student records](./docs/screenshots/student-records.png)
