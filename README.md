@@ -210,6 +210,27 @@ docker compose ps -a
 means its process exists; it does not prove the API completed startup or can
 authenticate to the database.
 
+## Minikube deployment
+
+Create the database Secret from a local, ignored file before applying the
+workloads. Never commit `.env.k8s` or put real credentials in the YAML files.
+
+```powershell
+Copy-Item .env.k8s.example .env.k8s
+notepad .env.k8s
+kubectl create secret generic student-api-db --from-env-file=.env.k8s --dry-run=client -o yaml | kubectl apply -f -
+kubectl apply -f deployment.yaml -f service.yaml
+kubectl rollout status deployment/mysql
+kubectl rollout status deployment/student-api
+kubectl get pods,services
+minikube service student-api --url
+```
+
+The API Service is a NodePort; keep the `minikube service` tunnel open while
+using its printed URL. MySQL is internal to the cluster. The demo MySQL
+Deployment has no persistent volume, so its data is not retained if the pod is
+replaced; use a PVC for persistent data. The dashboard is included in Docker
+Compose; the Kubernetes manifests expose the API and MySQL only.
 ## Normal operation
 
 The operations dashboard is available at `http://localhost:5173` after
