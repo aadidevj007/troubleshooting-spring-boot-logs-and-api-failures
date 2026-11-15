@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { isAllowedEndpoint, isSafeApiOrigin } from "./apiSecurity";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:8081";
+const API = import.meta.env.VITE_API_URL || window.location.origin;
 const API_ORIGIN = new URL(API, window.location.origin);
 if (!isSafeApiOrigin(API)) throw new Error("The API must point to a local application origin.");
 

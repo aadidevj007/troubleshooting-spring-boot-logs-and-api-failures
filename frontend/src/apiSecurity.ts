@@ -5,7 +5,7 @@ export function isSafeApiOrigin(
   try {
     const url = new URL(value, currentOrigin);
     return ["http:", "https:"].includes(url.protocol)
-      && ["localhost", "127.0.0.1"].includes(url.hostname);
+      && (url.origin === currentOrigin || ["localhost", "127.0.0.1"].includes(url.hostname));
   } catch {
     return false;
   }
